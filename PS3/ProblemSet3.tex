@@ -1,0 +1,115 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\title{Problem Set \#3}
+\author{Alexander Monge-Naranjo \\ FRB Atlanta and Emory University}
+\date{Due: April 6th, 2026}
+
+\begin{document}
+
+\maketitle
+
+Please:
+\begin{itemize}
+    \item Type your answers and submit them in a pdf.
+    \item Attach your codes.
+\end{itemize}
+
+\section*{1 Computing the Aiyagari Economy (60 pts)}
+
+In this exercise, we will compute the stationary equilibrium of a stylized Aiyagari economy.
+You are not required to know or perform sophisticated numerical techniques but you are free to use them.
+Instead, the focus is on being careful configurating your the code and inspect the results, using well-known economic and common sense properties for a code.
+
+Consider an economy populated by a continuum (mass 1) of infinite lived households.
+Time is discrete and indexed by $t=0,1,2,\dots$. Households have standard preferences:
+\begin{equation*}
+U_{t}=E_{t}\left[\sum_{j=0}^{\infty}\beta^{j}u(c_{t+j})\right]
+\end{equation*}
+where $E_{t}[\cdot]$ is the expectation under information available at time t, $\beta=0.96$ is a discount factor and $u(c)=\frac{c^{1-\sigma}}{1-\sigma}$ with $\sigma=2$.
+
+Every period, households (sometimes I will call them workers too) realize their labor market productivity or skill levels, $s_{t}$, which can take one of two values: low, $s_{L}=0.25$ or high $s_{H}=1$. The productivity is an exogenous state for the household, which has persistence.
+The transition probabilities are as follows
+\begin{equation*}
+Pr[s_{t+1}=s_{H}]=\begin{cases}0.85&\text{if } s_{t}=s_{H};\\ 0.25&\text{if } s_{t}=s_{L}.\end{cases}
+\end{equation*}
+and
+\begin{equation*}
+Pr[s_{t+1}=s_{L}]=\begin{cases}0.15&\text{if } s_{t}=s_{H};\\ 0.75&\text{if } s_{t}=s_{L}.\end{cases}
+\end{equation*}
+
+Given the skill prices of the period, $w_{t}$, the worker's earnings of the period is simply $y_{t}=w_{t}s$.
+In addition, the household can borrow or lending using a one period, riskless bond.
+With bond prices $q_{t}$, the budget constraint of households is given by
+\begin{equation*}
+c_{t}+q_{t}a_{t+1}=y_{t}+a_{t}.
+\end{equation*}
+
+Moreover, the household's financial position cannot fall below a threshold or borrowing limit.
+Recall that in Aiyagari, the limit is given by
+\begin{equation*}
+\phi=\min\left\{b,\frac{w(q)s_{L}}{1-q}\right\}
+\end{equation*}
+where $q$ denotes the (stationary equilibrium) bond prices and $w(q)$ is the unitary labor-skill prices associated to $q$ (as discussed below.) Then, the household is required to hold a financial position $a_{t+1}$ that is above that limit i.e.
+$a_{t+1} \geq \phi$.
+Let's assume $b=0$ in this exercise.
+
+Output is produced in this economy using a standard Cobb-Douglas, constant returns to scale technology:
+\begin{equation*}
+Y_{t}=AK^{\alpha}L^{1-\alpha};
+\end{equation*}
+We assume that $A=1$ and $\alpha=1/3$. Every period aggregate capital depreciates at a rate $\delta=0.05$.
+All in all, this is a very standard Aiyagari economy.
+
+\begin{enumerate}
+    \item Let's start by characterizing the skill (and with it the income) distribution.
+    \begin{enumerate}
+        \item Write down the transition probability matrix of $s$, $\pi(s^{\prime}|s)$ carefully defining rows or columns (up to you, as long as you are consistent) as the respective. Is there an invariant distribution $\lambda(s)$? Is it unique? Explain.
+        \item Compute the mean, standard deviation, and the coefficient of autocorrelation ($t$ with $t-1$) of $s$ and $\ln s$.
+    \end{enumerate}
+
+    \item Let's now characterize the prices of labor and capital as implied by $q$. To this end, let
+    \begin{equation*}
+    \overline{L}=\sum_{s\in\{s_{L},s_{H}\}}s\lambda(s),
+    \end{equation*}
+    where $\lambda(\cdot)$ is (one of?) the invariant distributions of labor market skills that you computed above.
+    \begin{enumerate}
+        \item Given $L=\overline{L}$ and for any $K$, write down the competitive factor prices $w, r$, as defined by the profit maximization of firms in the economy.
+        \item Given your answers above, write down the implied capital $K(q)$, and the implied wages associated to $w(q)$. Why is it that there is a unique $w(q)$ associated to each $q$?
+    \end{enumerate}
+
+    \item Finally, we proceed to solve for the stationary GE of the model. Here, we will do it using a rudimentary, bare-bones strategy. In practice, you can use a more iterative algorithm. Anyway, define an equally spaced grid for $q$ of $N_{q}=100$ points in the interval $[1.02\times\beta, 0.999]$. Why above $\beta$?
+    \begin{enumerate}
+        \item For each $q$ in your grid:
+        \begin{enumerate}
+            \item Write down the BE of the worker, explaining carefully what are the ``state'' for the workers' problem given that $q$ is constant. Can you argue that there exists a unique solution? Would you get it if you start your iteration from $V=0$?
+            \item Write down an algorithm to numerically solve for the value and policy function $(V, g)$ for the worker. Here, you may want to define a grid of points for wealth $\mathcal{A}$, and either use straight discretization or Chebyshev polynomials or splines or other methods to solve the problem. In either case, make sure that your computations do not depend on upper bound and the coarseness (the number of points) of the grid for $\mathcal{A}$. For example, make sure that changes in those do not affect the results, nor that there are a significant fraction of agents in the upper bound. Please, graph for each separate $s$, the value function $V$ (Figure 1) and policy function $g$ (Figure 2) with $a$ in the horizontal axis. Please, add your code with your answers.
+            \item Given the policy function $g$, characterize the invariant distribution of wealth $a\in\mathcal{A}$. Compute the level of aggregate wealth, denoted $Ea(q)$ associate to each $q$. Produce the graph with $K(q)$ and $Ea(q)$ for all the $q$ in the grid. Indicate which one(s) correspond to the (approximate) stationary equilibrium if any. If none, discuss how you amended your code to sort it out (e.g.\ finer grids, an alternative iterative algorithm, etc. Yes, that is the right attitude!!)
+        \end{enumerate}
+    \end{enumerate}
+
+    \item Once you have sorted out the equilibrium $q$:
+    \begin{enumerate}
+        \item Provide a graph of the distribution with the level of wealth in the horizontal axis and the fraction of households in the vertical axis. Provide similar graphs for the distribution of wealth conditional on the skill levels $s\in\{s_{L},s_{H}\}$. Likewise, produce graphs of the consumption distributions.
+        \item Compute the basic statistics for the income and wealth distribution of your model, in particular, mean, std., skewness of wealth.
+    \end{enumerate}
+\end{enumerate}
+
+\section*{2 Aiyagari with Two Types of Households (40 pts)}
+
+Imagine now that the economy is very similar to the one above, except that there are two types of households (workers.) Here, 70\% of workers are Type I, which is exactly the same as the one above.
+The rest, 30\%, are Type II of workers that are more prone to get sick.
+The skill transition probabilities for these workers are:
+\begin{equation*}
+Pr[s_{t+1}=s_{H}]=\begin{cases}0.5&\text{if } s_{t}=s_{H};\\ 0.5&\text{if } s_{t}=s_{L}.\end{cases}
+\end{equation*}
+and
+\begin{equation*}
+Pr[s_{t+1}=s_{L}]=\begin{cases}0.5&\text{if } s_{t}=s_{H}\\ 0.5&\text{if } s_{t}=s_{L}\end{cases}
+\end{equation*}
+
+Extend the code you produced to answer the previous question, explaining carefully how you had to change steps $1-4$. Explain, why this form of ex-ante heterogeneity will change the general equilibrium values for the aggregates $\{L, K, Y\}$, the equilibrium value $q$, and the wealth distribution.
+Likewise, extend your discussion to not only compare within-types of inequality, but also between-types differences.
+
+\end{document}
